@@ -63,8 +63,10 @@ def main():
                 for line in lines:
                     db_data = eval(line.replace('\n', ''))
                     insert_into_db(db_data)
+                    print(f"Inserted data: {db_data}")  # 데이터를 출력합니다.
 
             os.remove("new_request.txt")
+            break  # DB에 데이터를 입력한 후에 프로그램을 종료합니다.
 
 if __name__ == "__main__":
     main()
