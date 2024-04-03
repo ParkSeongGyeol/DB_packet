@@ -23,7 +23,7 @@ def insert_into_db(data):
     try:
         # MariaDB 연결 설정
         conn = pymysql.connect(
-            host="root",
+            host="192.168.45.135",
             user="root",
             password="Q!w2e3r4",
             db="test",
