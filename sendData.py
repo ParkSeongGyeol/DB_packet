@@ -1,6 +1,5 @@
 import os
-import mariadb
-from mariadb import Error
+import pymysql
 import time
 
 # 패킷 데이터를 받는 함수
@@ -23,24 +22,33 @@ def insert_into_db(data):
     conn = None
     try:
         # MariaDB 연결 설정
-        conn = mariadb.connect(
+        conn = pymysql.connect(
+            host="root",
             user="root",
             password="Q!w2e3r4",
-            host="root",
-            database="test"
+            db="test",
+            charset='utf8mb4'
         )
 
         cur = conn.cursor()
+        # 테이블이 있는지 확인하고 없으면 생성
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS tabel1 (
+                vehicle_number INT,
+                license_plate VARCHAR(255),
+                time TIMESTAMP
+            )
+        """)
+
         # SQL 쿼리를 작성하여 데이터를 DB에 입력
-        cur.execute("INSERT INTO your_table (vehicle_number, license_plate, time) VALUES (?, ?, ?)", (data["vehicle_number"], data["license_plate"], data["time"]))
+        cur.execute("INSERT INTO tabel1 (vehicle_number, license_plate, time) VALUES (%s, %s, %s)", (data["vehicle_number"], data["license_plate"], data["time"]))
 
         conn.commit()
-    except Error as e:
+    except Exception as e:
         print(f"Error connecting to MariaDB: {e}")
     finally:
         if conn:
             conn.close()
-
 # 메인 함수
 def main():
     while True:
