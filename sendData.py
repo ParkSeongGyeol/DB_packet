@@ -20,13 +20,14 @@ def append_to_file(filename, data):
 
 # MariaDB에 데이터를 입력하는 함수
 def insert_into_db(data):
+    conn = None
     try:
         # MariaDB 연결 설정
         conn = mariadb.connect(
-            user="your_username",
-            password="your_password",
-            host="localhost",
-            database="your_database"
+            user="root",
+            password="Q!w2e3r4",
+            host="root",
+            database="test"
         )
 
         cur = conn.cursor()
