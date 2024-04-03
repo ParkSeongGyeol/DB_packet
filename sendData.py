@@ -1,38 +1,61 @@
 import os
-import pymysql
+import mariadb
+from mariadb import Error
+import time
 
-# 데이터베이스 연결 설정
-db = pymysql.connect(host='localhost', user='user', password='password', db='your_db')
+# 패킷 데이터를 받는 함수
+def receive_packet_data():
+    # 패킷 데이터를 받는 코드를 여기에 작성하세요.
+    # 이 예제에서는 임의의 데이터를 반환합니다.
+    return {
+        "vehicle_number": 1,
+        "license_plate": "12가 3456",
+        "time": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    }
 
-def write_to_file(data, filename='request.txt'):
-    mode = 'a' if os.path.exists(filename) else 'w'
-    with open(filename, mode) as file:
-        file.write(data + '\n')
+# 파일에 데이터를 추가하는 함수
+def append_to_file(filename, data):
+    with open(filename, 'a') as file:
+        file.write(str(data) + "\n")
 
-def read_from_file(filename='request.txt'):
-    with open(filename, 'r') as file:
-        return file.readlines()
+# MariaDB에 데이터를 입력하는 함수
+def insert_into_db(data):
+    try:
+        # MariaDB 연결 설정
+        conn = mariadb.connect(
+            user="your_username",
+            password="your_password",
+            host="localhost",
+            database="your_database"
+        )
 
-def write_to_db(data_list):
-    cursor = db.cursor()
-    for data in data_list:
-        # SQL 쿼리 실행 (예시)
-        cursor.execute('INSERT INTO your_table (column) VALUES (%s)', (data,))
-    db.commit()
+        cur = conn.cursor()
+        # SQL 쿼리를 작성하여 데이터를 DB에 입력
+        cur.execute("INSERT INTO your_table (vehicle_number, license_plate, time) VALUES (?, ?, ?)", (data["vehicle_number"], data["license_plate"], data["time"]))
 
-def process_data():
-    # 1. 패킷을 통해 데이터를 입력받는다고 가정
-    packet_data = 'some_data_received'
+        conn.commit()
+    except Error as e:
+        print(f"Error connecting to MariaDB: {e}")
+    finally:
+        if conn:
+            conn.close()
 
-    # 2. request.txt 파일에 데이터를 저장
-    write_to_file(packet_data)
+# 메인 함수
+def main():
+    while True:
+        data = receive_packet_data()
+        append_to_file("request.txt", data)
 
-    # 3. DB에 내용을 저장하기 위해 파일 이름 변경 및 DB에 데이터 입력
-    if os.path.exists('request.txt'):
-        os.rename('request.txt', 'new_request.txt')
-        data_to_db = read_from_file('new_request.txt')
-        write_to_db(data_to_db)
-        os.remove('new_request.txt')
+        if os.path.exists("request.txt"):
+            os.rename("request.txt", "new_request.txt")
 
-# 데이터 처리 실행
-process_data()
+            with open("new_request.txt", 'r') as file:
+                lines = file.readlines()
+                for line in lines:
+                    db_data = eval(line.replace('\n', ''))
+                    insert_into_db(db_data)
+
+            os.remove("new_request.txt")
+
+if __name__ == "__main__":
+    main()
