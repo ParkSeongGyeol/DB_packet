@@ -5,15 +5,22 @@ conn = pymysql.connect(
     host="192.168.45.135",
     user="root",
     password="Q!w2e3r4",
-    db="test",
     charset='utf8mb4'
 )
 
 try:
     with conn.cursor() as cursor:
+        # Create database
+        sql = "CREATE DATABASE IF NOT EXISTS healthcare;"
+        cursor.execute(sql)
+
+        # Use the new database
+        sql = "USE healthcare;"
+        cursor.execute(sql)
+
         # Create table
         sql = """
-        CREATE TABLE HealthData (
+        CREATE TABLE IF NOT EXISTS HealthData (
             id INT AUTO_INCREMENT,
             user_id INT,
             timestamp DATETIME,
@@ -34,16 +41,6 @@ try:
         );
         """
         cursor.execute(sql)
-
-        # Insert data
-        sql = """
-        INSERT INTO HealthData (
-            user_id, timestamp, heart_rate, body_temp, blood_pressure, steps, 
-            water_intake, sleep_duration, calorie_intake, calorie_burned, weight, 
-            bmi, ambient_temp, humidity, gps_location
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
-        """
-        cursor.execute(sql, (1, "2023-01-01 00:00:00", 70, 36.5, 120, 10000, 2000, 8, 2000, 500, 70, 22, 25, 50, "37.5665,126.9780"))
 
     # Commit the transaction
     conn.commit()
